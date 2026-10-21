@@ -1,0 +1,121 @@
+{
+  "name": "p3n-vscode",
+  "displayName": "p3n",
+  "description": "Select text and see if it reads as AI-written, or rewrite it in place. Free without an account.",
+  "version": "0.1.0",
+  "publisher": "nikita-andreiev",
+  "author": "Nikita Andreiev",
+  "license": "MIT",
+  "icon": "images/icon.png",
+  "galleryBanner": {
+    "color": "#fbfaf7",
+    "theme": "light"
+  },
+  "homepage": "https://p3n.si",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Barabosik/p3n-vscode"
+  },
+  "bugs": {
+    "url": "https://github.com/Barabosik/p3n-vscode/issues"
+  },
+  "qna": "https://github.com/Barabosik/p3n-vscode/issues",
+  "pricing": "Free",
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "ai detector",
+    "ai writing",
+    "ai text",
+    "humanize",
+    "rewrite",
+    "writing",
+    "prose",
+    "markdown",
+    "p3n"
+  ],
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "main": "./src/extension.js",
+  "extensionKind": [
+    "ui",
+    "workspace"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    },
+    "virtualWorkspaces": true
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "p3n.check",
+        "title": "p3n: Check for AI"
+      },
+      {
+        "command": "p3n.rewrite",
+        "title": "p3n: Rewrite"
+      },
+      {
+        "command": "p3n.setKey",
+        "title": "p3n: Set API key"
+      },
+      {
+        "command": "p3n.removeKey",
+        "title": "p3n: Remove API key"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "p3n.check",
+          "when": "editorHasSelection",
+          "group": "p3n@1"
+        },
+        {
+          "command": "p3n.rewrite",
+          "when": "editorHasSelection",
+          "group": "p3n@2"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "p3n.removeKey",
+          "when": "p3n.hasKey"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "p3n",
+          "title": "p3n",
+          "icon": "media/activity.svg"
+        }
+      ]
+    },
+    "views": {
+      "p3n": [
+        {
+          "type": "webview",
+          "id": "p3n.view",
+          "name": "p3n"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "test": "npm run test:unit && npm run test:integration",
+    "test:unit": "node --test \"test/unit/*.test.js\"",
+    "test:integration": "node test/integration/run.js",
+    "package": "vsce package --no-dependencies"
+  },
+  "devDependencies": {
+    "@vscode/test-electron": "3.1.0",
+    "@vscode/vsce": "4.0.0",
+    "mocha": "11.8.0"
+  }
+}

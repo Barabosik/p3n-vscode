@@ -1,0 +1,13 @@
+.github/**
+.vscode-test/**
+.vscode/**
+dev/**
+test/**
+store/**
+node_modules/**
+images/**
+!images/icon.png
+.gitignore
+.gitattributes
+CONTRIBUTING.md
+**/*.vsix
