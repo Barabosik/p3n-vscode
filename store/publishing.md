@@ -1,8 +1,8 @@
 # Publishing
 
 Both stores are free, and neither reviews a new extension by hand. An automated scan runs on each upload, and the
-extension is public a few minutes later. Upload the same .vsix to both: the CI run's `vsix` artifact, or
-`npm run package`.
+extension is public a few minutes later. Upload the same .vsix to both: the one attached to the GitHub release
+(https://github.com/Barabosik/p3n-vscode/releases/latest), which is the one that was tested in VS Code.
 
 The publisher ID must match `"publisher"` in package.json (`nikita-andreiev`). A different ID means changing
 package.json and building again.
@@ -46,6 +46,7 @@ line or CI. Since 2026 a new Azure DevOps organisation needs an Azure subscripti
 
 ## After both are live
 
-- README › Install: replace "coming soon" with the two store links.
+- README › Install: replace "coming soon" with the two store links, and keep "Install from VSIX" for people who
+  can't use the stores.
 - The p3n install page (https://nikita-andreiev.com/p3n/) and the portfolio can link to it. That page lives in the
   website repo.

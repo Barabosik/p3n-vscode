@@ -45,8 +45,22 @@ p3n sends the text you selected, only when you run Check for AI or Rewrite, and 
 
 ## Install
 
-- VS Code Marketplace and Open VSX (for VSCodium, Cursor and Windsurf): coming soon.
-- From source: run `npm ci` and `npm run package`. Then in VS Code open the Extensions view, click **…**, choose **Install from VSIX…** and pick `p3n-vscode-0.1.0.vsix`.
+The VS Code Marketplace and Open VSX listings are coming soon. Until then, install the `.vsix` file from a release. It's the same package the stores will get.
+
+### Install from VSIX
+
+1. Download `p3n-vscode-0.1.0.vsix` from the [latest release](https://github.com/Barabosik/p3n-vscode/releases/latest).
+2. In VS Code, open the Extensions view (Ctrl+Shift+X, or Cmd+Shift+X on a Mac).
+3. Click **…** at the top of the view, choose **Install from VSIX…** and pick the file.
+4. The p3n pen appears in the activity bar. Select some text and right-click it to start.
+
+From a terminal, `code --install-extension p3n-vscode-0.1.0.vsix` does the same. VSCodium, Cursor and Windsurf install a `.vsix` the same way. You need VS Code 1.90 or later.
+
+An install from a `.vsix` doesn't update itself. To update, install the next release's file over it. Once the extension is in the stores, installing it from there keeps it up to date.
+
+### From source
+
+Run `npm ci` and `npm run package`, then install `p3n-vscode-0.1.0.vsix` as above.
 
 ## Known gaps
 

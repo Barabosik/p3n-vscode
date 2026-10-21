@@ -33,4 +33,13 @@ The shots go to `dev/out/shots/`. This run uses the live API: 2 of the free hour
 
 ## Package
 
-`npm run package` writes `p3n-vscode-<version>.vsix`. CI builds it on every push too; it's the `vsix` artifact of the run. Publishing to the stores is done by hand; see [store/publishing.md](store/publishing.md).
+`npm run package` writes `p3n-vscode-<version>.vsix`. CI builds it on every push too; it's the `vsix` artifact of the run.
+
+## Release
+
+1. Raise `version` in package.json and add a CHANGELOG entry.
+2. Package and test the `.vsix` (the integration tests, then `node dev/shots.js` in a real VS Code).
+3. Tag the commit `v<version>` and push the tag.
+4. Make a GitHub release from the tag, with the CHANGELOG entry and the tested `.vsix` attached.
+
+Publishing to the stores is done by hand with the same `.vsix`; see [store/publishing.md](store/publishing.md).
