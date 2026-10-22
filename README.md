@@ -9,11 +9,12 @@
 </p>
 
 <p align="center">
-  <a href="https://marketplace.visualstudio.com/items?itemName=nikita-andreiev.p3n-vscode">VS Code Marketplace</a> · <a href="https://open-vsx.org/extension/nikita-andreiev/p3n-vscode">Open VSX</a> · <a href="https://p3n.si">p3n.si</a> · <a href="https://nikita-andreiev.com/p3n/">All p3n apps</a>
+  <a href="https://marketplace.visualstudio.com/items?itemName=nikita-andreiev.p3n-vscode">VS Code Marketplace</a> · <a href="https://p3n.si">p3n.si</a> · <a href="https://nikita-andreiev.com/p3n/">All p3n apps</a>
 </p>
 
 <p align="center">
   <a href="https://github.com/Barabosik/p3n-vscode/actions/workflows/ci.yml"><img src="https://github.com/Barabosik/p3n-vscode/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://marketplace.visualstudio.com/items?itemName=nikita-andreiev.p3n-vscode"><img src="https://vsmarketplacebadges.dev/version-short/nikita-andreiev.p3n-vscode.svg?label=VS%20Code%20Marketplace" alt="VS Code Marketplace version"></a>
 </p>
 
 ![Check for AI](images/check-light.png)
@@ -35,13 +36,13 @@
 
 ## Free, or with a key
 
-You get 10 checks or rewrites an hour without an account, up to 5,000 characters each. For more, make an API key at [p3n.si](https://p3n.si/dashboard/keys) and run **p3n: Set API key**. With a key, p3n takes up to 200,000 characters and bills your p3n balance.
+You get 10 checks or rewrites an hour without an account, up to 5,000 characters each. For more, [sign up at p3n.si](https://p3n.si/register) (you get free credit), make a key on the [API keys](https://p3n.si/dashboard/keys) page, and run **p3n: Set API key**. With a key, p3n takes up to 200,000 characters and bills your p3n balance.
 
 The key is kept in VS Code's secret storage, encrypted with your system's keychain. It's never written to settings.json and isn't synced. **p3n: Remove API key** deletes it.
 
 ## Privacy
 
-p3n sends the text you selected, only when you run Check for AI or Rewrite, and only to `api.p3n.si`. It keeps no history and has no telemetry. The details are in [PRIVACY.md](PRIVACY.md).
+The extension sends the text you selected to `api.p3n.si`, and only when you run Check for AI or Rewrite. The extension keeps no history and has no telemetry. p3n.si keeps the text for up to 7 days. The details are in [PRIVACY.md](PRIVACY.md).
 
 ## Install
 
@@ -55,13 +56,13 @@ code --install-extension nikita-andreiev.p3n-vscode
 
 Marketplace installs update themselves. You need VS Code 1.90 or later.
 
-### From Open VSX
+### VSCodium, Cursor and Windsurf
 
-For VSCodium, Cursor and Windsurf: install [p3n from Open VSX](https://open-vsx.org/extension/nikita-andreiev/p3n-vscode), or search for **p3n** in their Extensions view.
+These editors install from Open VSX, where p3n is coming soon. Until then, install the `.vsix` file from a release, as below.
 
 ### Install from VSIX
 
-If you can't use either store, install the `.vsix` file from a release. It's the same package the stores have.
+If you can't use the Marketplace, install the `.vsix` file from a release. It's the same package the Marketplace has.
 
 1. Download the `.vsix` file from the [latest release](https://github.com/Barabosik/p3n-vscode/releases/latest).
 2. In VS Code, open the Extensions view (Ctrl+Shift+X, or Cmd+Shift+X on a Mac).
@@ -70,7 +71,7 @@ If you can't use either store, install the `.vsix` file from a release. It's the
 
 From a terminal, `code --install-extension` with the file's path does the same. VSCodium, Cursor and Windsurf install a `.vsix` the same way.
 
-An install from a `.vsix` doesn't update itself. To update, install the next release's file over it, or install p3n from a store instead.
+An install from a `.vsix` doesn't update itself. To update, install the next release's file over it, or install p3n from the Marketplace instead.
 
 ### From source
 
@@ -82,8 +83,10 @@ Run `npm ci` and `npm run package`, then install the `p3n-vscode-<version>.vsix`
 - Desktop VS Code only for now. vscode.dev and github.dev aren't supported yet.
 - Rewrite is for prose. On code it treats everything as text, so check the result before you keep it.
 
+## Other p3n apps
+
+p3n also works in [Chrome and Firefox](https://nikita-andreiev.com/p3n/#browser), [Word and Excel](https://nikita-andreiev.com/p3n/#office), [Google Docs](https://nikita-andreiev.com/p3n/#docs), [Obsidian](https://nikita-andreiev.com/p3n/#obsidian) and [Sublime Text](https://nikita-andreiev.com/p3n/#sublime). Install steps for each are on [nikita-andreiev.com/p3n](https://nikita-andreiev.com/p3n/).
+
 ## Open source
 
 MIT licence. Bugs and ideas go in [issues](https://github.com/Barabosik/p3n-vscode/issues). Tests and builds are in [CONTRIBUTING.md](CONTRIBUTING.md).
-
-p3n is also a [browser extension](https://github.com/Barabosik/p3n-chrome-extension) for Chrome and Firefox, an [add-in](https://github.com/Barabosik/p3n-office-addin) for Word and Excel, and a Google Docs add-on. They all use the same [p3n API](https://p3n.si/docs).
