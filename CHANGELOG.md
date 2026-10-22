@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.3
+
+- **Show changes**, under a rewrite, opens your selection and the rewrite side by side in VS Code's diff editor, so you can read what changed before you replace anything. Nothing in your file changes until you click **Replace selection**.
+- A selection under eight words now gets "Rewrite needs at least a sentence of eight words. Select more." before anything is sent, like the other p3n apps, instead of the API's error.
+- Over the 5,000 characters p3n takes without a key, the message now has an **Add an API key** button.
+- "Rewriting… N s" keeps counting from the start when you hide the p3n view and show it again during a run. It used to start again at 0.
+- When **p3n: Set API key** can't reach p3n, it says the key wasn't saved, and no longer offers the API keys page, which can't help with that.
+- The README on the Marketplace and Open VSX links Open VSX and has its install steps. It lists the commands, and how to give them keyboard shortcuts of your own; p3n still sets none.
+
 ## 0.1.2
 
 - The README's Open VSX link is gone: p3n isn't on Open VSX yet. VSCodium, Cursor and Windsurf install the `.vsix` from GitHub Releases.
