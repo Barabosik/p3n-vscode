@@ -59,9 +59,22 @@ test('Before a call: too long without a key, with a key; too short for Check', (
   assert.equal(present.precheck('detect', 'x'.repeat(5001), true), null);
   assert.match(present.precheck('humanize', 'x'.repeat(200_001), true).message, /the API takes up to 200,000/);
   assert.equal(present.precheck('detect', 'Too short.', false).message, 'Check needs at least 40 characters, a sentence or two. Select more.');
-  assert.equal(present.precheck('humanize', 'Too short.', false), null);
   // Counted in code points: 39 emoji are 78 UTF-16 units but still too short.
   assert.equal(present.precheck('detect', '😀'.repeat(39), false).type, 'too_short');
+  // Over the free limit: the error offers the key it mentions. With a key there's no key to add.
+  assert.deepEqual(present.error(free).actions, [{ label: 'Add an API key', command: 'p3n.setKey' }]);
+  assert.deepEqual(present.error(present.precheck('detect', 'x'.repeat(200_001), true)).actions, []);
+});
+
+test('Before a call: Rewrite needs eight words, counted like the API (numbers are not words)', () => {
+  const MSG = 'Rewrite needs at least a sentence of eight words. Select more.';
+  assert.equal(present.precheck('humanize', 'Too short to rewrite here.', false).message, MSG);
+  assert.equal(present.precheck('humanize', 'Revenue rose 12% to 4.2M in Q3 2026.', false).type, 'too_short');
+  assert.equal(present.precheck('humanize', 'We moved the office to Tivolska in March.', false), null);
+  // Check isn't held to it: 40 characters are enough there.
+  assert.equal(present.precheck('detect', 'Revenue rose 12% to 4.2M in Q3 2026, again.', false), null);
+  // The longer limit is said first.
+  assert.equal(present.precheck('humanize', 'x '.repeat(3000), false).type, 'too_long');
 });
 
 test('An answer without its fields is an error, not 0%', () => {
@@ -89,6 +102,13 @@ test('Errors: own copy and buttons; Sign up only to p3n.si', () => {
   assert.equal(present.error(new ApiError(504, 'too_long', 'The text took longer than 85 s to process; send a shorter text. Not charged.')).lines[0].text, 'The text took longer than 85 s to process; send a shorter text. Not charged.');
 });
 
+test('Set API key: a refused key points at the keys page; a lost connection does not', () => {
+  assert.deepEqual(present.keyError(new ApiError(401, 'unauthorized', 'Invalid API key.')),
+    { text: "p3n doesn't accept this key, so it wasn't saved. Copy it again from the API keys page.", keysPage: true });
+  assert.deepEqual(present.keyError(new ApiError(0, 'network', "Can't reach p3n. Check your connection and try again.")),
+    { text: "p3n couldn't check the key, so it wasn't saved. Can't reach p3n. Check your connection and try again.", keysPage: false });
+});
+
 test('The footer: free calls left, or the balance', () => {
   assert.equal(present.quota({ hasKey: false, free: null }), 'Free without a key: 10 calls an hour, up to 5,000 characters each.');
   assert.equal(present.quota({ hasKey: false, free: 1 }), '1 free call left this hour without a key.');
@@ -113,4 +133,5 @@ test('Where the selection is, and what Replace says', () => {
   assert.equal(present.REPLACED('darwin'), 'Replaced in the editor and selected there. Cmd+Z in the editor undoes it.');
   assert.equal(present.refused('changed'), 'The text in the editor changed since you selected it. Copy the rewrite and paste it instead.');
   assert.equal(present.refused('nope'), "p3n couldn't put the text back. Copy the rewrite and paste it instead.");
+  assert.equal(present.compareTitle('notes.md, lines 4–9'), 'notes.md, lines 4–9 ↔ Rewrite');
 });

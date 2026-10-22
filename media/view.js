@@ -124,7 +124,10 @@
       clearTimeout(copy.reset);
       copy.reset = setTimeout(() => copy.replaceChildren('Copy'), 1500);
     });
-    buttons.push(copy, h('button', { type: 'button', class: 'link small push', onclick: () => send({ type: 'again' }) }, 'Try another rewrite'));
+    buttons.push(copy,
+      // The selection and the rewrite in VS Code's diff editor.
+      h('button', { type: 'button', class: 'link small', id: 'compare', title: 'Open the selection and the rewrite side by side', onclick: () => send({ type: 'compare' }) }, 'Show changes'),
+      h('button', { type: 'button', class: 'link small push', onclick: () => send({ type: 'again' }) }, 'Try another rewrite'));
     return [
       scoreBlock(m.score),
       meter(m.score),
@@ -164,10 +167,11 @@
     clearInterval(timer);
     els.busy.hidden = !busy;
     if (!busy) return;
-    const t0 = Date.now();
+    // Counted from when the run started: the page is rebuilt each time the view is shown again.
+    const t0 = busy.since ?? Date.now();
     const what = busy.skill === 'detect' ? 'Checking' : 'Rewriting';
     const tick = () => {
-      const s = Math.round((Date.now() - t0) / 1000);
+      const s = Math.max(0, Math.round((Date.now() - t0) / 1000));
       els.busyText.textContent = `${what}… ${s} s` + (busy.skill === 'humanize' && s > 8 ? ' (a rewrite takes up to a minute)' : '');
     };
     tick();
@@ -186,7 +190,7 @@
     els.source.hidden = !next.source;
     els.source.textContent = next.source ? `${next.source.where} · ${next.source.chars.toLocaleString('en-US')} characters` : '';
     els.intro.hidden = !!(next.source || next.result || next.busy);
-    if (!!prev?.busy !== !!next.busy || prev?.busy?.skill !== next.busy?.skill) drawBusy(next.busy);
+    if (prev?.busy?.since !== next.busy?.since) drawBusy(next.busy);
     const fresh = next.seq !== drawnSeq;
     if (fresh || JSON.stringify(prev?.result) !== JSON.stringify(next.result)) drawResult(next.result, fresh && !!next.result);
     drawnSeq = next.seq;

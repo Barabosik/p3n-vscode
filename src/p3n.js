@@ -6,6 +6,8 @@ const present = require('./present');
 
 const SECRET = 'p3n.apiKey';
 const VIEW_ID = 'p3n.view';
+// Show changes' two documents: in memory, read-only, never on disk.
+const DIFF_SCHEME = 'p3n';
 // Buttons in the view may run only these commands.
 const VIEW_COMMANDS = new Set(['p3n.setKey']);
 
@@ -16,11 +18,12 @@ class P3n {
     this.key = '';
     this.free = null; // free calls left this hour (X-Free-Remaining), after the first call
     this.account = null; // { me } or { error }, with a key
-    this.busy = null; // { skill }
+    this.busy = null; // { skill, since }: since is when it started, so the view counts on after it's hidden and shown
     this.source = null; // the selection the result is about
     this.result = null; // a view model from present.js
     this.seq = 0; // a new result's number, so the view animates it once
     this.controller = null;
+    this.compared = new Map(); // Show changes' documents: uri → text
     this.lastEditor = vscode.window.activeTextEditor;
     this.test = context.extensionMode === vscode.ExtensionMode.Test;
     this.rendered = new vscode.EventEmitter(); // the view's text after each draw (tests only)
@@ -87,12 +90,14 @@ class P3n {
       if (!selected.trim()) return void vscode.window.showInformationMessage('Nothing is selected. Select some text in the editor first.');
       // A selection that ends at the start of a line doesn't take that line.
       const endLine = sel.end.character === 0 && sel.end.line > sel.start.line ? sel.end.line - 1 : sel.end.line;
+      const name = ed.document.uri.path.split('/').pop() || 'Untitled';
       src = {
         uri: ed.document.uri,
         range: new vscode.Range(sel.start, sel.end),
         selected,
         sent: selected.trim(),
-        where: present.where(ed.document.uri.path.split('/').pop() || 'Untitled', sel.start.line, endLine),
+        name,
+        where: present.where(name, sel.start.line, endLine),
         viewColumn: ed.viewColumn,
         replaced: false,
       };
@@ -109,7 +114,7 @@ class P3n {
 
     const controller = new AbortController();
     this.controller = controller;
-    this.busy = { skill };
+    this.busy = { skill, since: Date.now() };
     this.post();
     const work = (async () => {
       try {
@@ -185,6 +190,29 @@ class P3n {
     this.post();
   }
 
+  // Show changes: the selection and the rewrite side by side in VS Code's diff editor, before Replace. The two
+  // documents keep the file's name, so the diff highlights them like the file.
+  async compare() {
+    const src = this.source;
+    const model = this.result;
+    if (!src || model?.kind !== 'humanize') return;
+    const uri = (side) => vscode.Uri.from({ scheme: DIFF_SCHEME, path: `/${this.seq}/${side}/${src.name}` });
+    const [left, right] = [uri('selection'), uri('rewrite')];
+    this.remember(left, src.selected);
+    this.remember(right, model.insert);
+    await vscode.commands.executeCommand('vscode.diff', left, right, present.compareTitle(src.where), { preview: true });
+  }
+
+  // VS Code asks for a document's text again when a closed diff is reopened, so keep the last few.
+  remember(uri, text) {
+    this.compared.set(uri.toString(), text.replace(/\r\n/g, '\n'));
+    while (this.compared.size > 20) this.compared.delete(this.compared.keys().next().value);
+  }
+
+  provideTextDocumentContent(uri) {
+    return this.compared.get(uri.toString()) ?? '';
+  }
+
   async copy() {
     if (this.result?.kind === 'humanize') await vscode.env.clipboard.writeText(this.result.rewrite);
   }
@@ -208,6 +236,7 @@ class P3n {
       case 'again': return this.run('humanize', { again: true, options: { fresh: true } });
       case 'cancel': return this.cancel();
       case 'replace': return this.replace();
+      case 'compare': return this.compare();
       case 'copy': return this.copy();
       case 'account': return vscode.commands.executeCommand('p3n.account');
       case 'command': return VIEW_COMMANDS.has(m.id) && vscode.commands.executeCommand(m.id);
@@ -221,4 +250,4 @@ class P3n {
   }
 }
 
-module.exports = { P3n, SECRET, VIEW_ID };
+module.exports = { P3n, SECRET, VIEW_ID, DIFF_SCHEME };

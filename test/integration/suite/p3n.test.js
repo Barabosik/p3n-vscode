@@ -165,6 +165,34 @@ suite('p3n', () => {
     await vscode.commands.executeCommand('workbench.action.revertAndCloseActiveEditor');
   });
 
+  test('Show changes: the selection and the rewrite in the diff editor; Replace still works after', async () => {
+    select(SHORT);
+    await rewrite();
+    assert.ok((await shows(/No longer reads as AI/)).includes('Show changes'));
+    await p3n.onMessage({ type: 'compare' });
+    const tab = await waitFor(() => {
+      const t = vscode.window.tabGroups.activeTabGroup.activeTab;
+      return t?.input instanceof vscode.TabInputTextDiff && t;
+    }, 'the diff editor');
+    assert.equal(tab.label, 'essay.md, line 5 ↔ Rewrite');
+    const { original: left, modified: right } = tab.input;
+    assert.deepEqual([left.scheme, right.scheme], ['p3n', 'p3n']);
+    const [before, after] = await Promise.all([vscode.workspace.openTextDocument(left), vscode.workspace.openTextDocument(right)]);
+    assert.equal(before.getText(), SHORT);
+    assert.equal(after.getText(), 'This transition helps teams of all sizes.');
+    assert.equal(after.languageId, 'markdown', 'highlighted like the file');
+    assert.equal(doc.getText(), original, 'the file is untouched');
+    // Replace from the view goes to the file, not the diff.
+    await p3n.onMessage({ type: 'replace' });
+    await shows(/Replaced in the editor/);
+    assert.equal(vscode.window.activeTextEditor?.document, doc);
+    assert.equal(doc.getText(), original.replace(SHORT, 'This transition helps teams of all sizes.'));
+    await vscode.commands.executeCommand('undo');
+    assert.equal(doc.getText(), original);
+    const diffs = vscode.window.tabGroups.all.flatMap((g) => g.tabs).filter((t) => t.input instanceof vscode.TabInputTextDiff);
+    await vscode.window.tabGroups.close(diffs);
+  });
+
   test('Try another rewrite sends the same text with fresh: true', async () => {
     select(SHORT);
     await rewrite();
@@ -175,7 +203,7 @@ suite('p3n', () => {
     assert.deepEqual(mock.calls().map((r) => r.body), [{ text: SHORT }, { text: SHORT, options: { fresh: true } }]);
   });
 
-  test('Nothing selected, too long, too short: nothing is sent', async () => {
+  test('Nothing selected, too long, too short: nothing is sent until the selection is enough', async () => {
     editor.selection = new vscode.Selection(0, 0, 0, 0);
     await check();
     await sleep(300);
@@ -185,14 +213,22 @@ suite('p3n', () => {
     const ed = await vscode.window.showTextDocument(long, { preview: false });
     ed.selection = new vscode.Selection(0, 0, 0, 5001);
     await check();
-    await shows(/That's 5,001 characters\. Without an API key p3n takes up to 5,000\. Select less, or add a key\./);
+    await shows(/That's 5,001 characters\. Without an API key p3n takes up to 5,000\. Select less, or add a key\.\s+Add an API key/);
+    assert.deepEqual(p3n.result.actions, [{ label: 'Add an API key', command: 'p3n.setKey' }]);
     await vscode.commands.executeCommand('workbench.action.revertAndCloseActiveEditor');
 
     editor = await vscode.window.showTextDocument(doc, { preview: false });
     select('Team update');
     await check();
     await shows(/Check needs at least 40 characters, a sentence or two\. Select more\./);
+    await rewrite();
+    await shows(/Rewrite needs at least a sentence of eight words\. Select more\./);
+    // Eight words are enough.
+    select('We shipped the new billing page on Tuesday.');
     assert.equal(mock.calls().length, 0);
+    await rewrite();
+    await shows(/No longer reads as AI/);
+    assert.deepEqual(mock.calls().map((r) => r.body), [{ text: 'We shipped the new billing page on Tuesday.' }]);
   });
 
   test('Errors read like the other p3n clients, with no script error', async () => {
@@ -204,6 +240,8 @@ suite('p3n', () => {
       [{ body: { ...FIXTURES.detect, output: { version: 'detect-v9' } } }, /p3n answered without a result\./],
       [{ status: 402, body: { error: { type: 'insufficient_credit', message: 'x' } } }, /Your p3n balance is too low for this\.[\s\S]*Top up/],
       [{ status: 429, body: { error: { type: 'rate_limited', message: 'x' } } }, /Too many requests at once\./],
+      [{ status: 401, body: { error: { type: 'unauthorized', message: 'Invalid API key.' } } }, /p3n didn't accept your API key\. It may have been revoked\.[\s\S]*Change the key/],
+      [{ drop: true }, /Can't reach p3n\. Check your connection and try again\./],
     ];
     for (const [next, want] of cases) {
       mock.queue.push(next);
@@ -226,6 +264,23 @@ suite('p3n', () => {
     assert.deepEqual(mock.calls().map((r) => r.path), ['/v1/detect', '/v1/runs/run-1']);
   });
 
+  test('The busy line counts from the start after the view is hidden and shown again', async () => {
+    mock.queue.push({ delayMs: 8000, body: FIXTURES.humanize });
+    select(SHORT);
+    p3n.lastRendered = null;
+    const running = vscode.commands.executeCommand('p3n.rewrite');
+    await shows(/Rewriting… 0 s/);
+    await vscode.commands.executeCommand('workbench.view.explorer');
+    await sleep(2500);
+    p3n.lastRendered = null;
+    await vscode.commands.executeCommand('p3n.view.focus');
+    await sleep(500);
+    p3n.post();
+    await shows(/Rewriting… [2-7] s/);
+    await p3n.onMessage({ type: 'cancel' });
+    await running;
+  });
+
   test('Cancel stops a run and shows no result', async () => {
     mock.queue.push({ delayMs: 4000, body: FIXTURES.humanize });
     select(SHORT);
@@ -241,6 +296,10 @@ suite('p3n', () => {
   });
 
   test('API key: checked before saving, kept in SecretStorage, sent as a bearer token, removable', async () => {
+    // No connection: not saved.
+    mock.queue.push({ drop: true });
+    assert.equal(await vscode.commands.executeCommand('p3n.setKey', 'p3n_good'), false);
+    assert.equal(mock.calls('/v1/me').length, 1);
     assert.equal(await vscode.commands.executeCommand('p3n.setKey', 'p3n_wrong'), false);
     assert.equal(await vscode.commands.executeCommand('p3n.setKey', 'not-a-key'), false);
     assert.equal(p3n.key, '');

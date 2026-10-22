@@ -13,6 +13,10 @@ const LINKS = {
 const MAX_CHARS = { free: 5_000, key: 200_000 };
 // Detect refuses shorter text (counted in code points, after trimming).
 const MIN_DETECT_CHARS = 40;
+// Humanize refuses fewer than eight words, counted as the API counts them: runs of the letters A to Z, ' and -,
+// so 2029 isn't a word and č splits one.
+const MIN_REWRITE_WORDS = 8;
+const rewriteWords = (t) => (String(t ?? '').match(/[A-Za-z][A-Za-z'-]*/g) ?? []).length;
 // Every call names this client (X-P3N-Client), for the user's usage page.
 const CLIENT = `p3n-vscode/${version}`;
 
@@ -92,4 +96,4 @@ async function me(key, { signal } = {}) {
   return (await call('/v1/me', { key, signal })).data;
 }
 
-module.exports = { SITE, LINKS, MAX_CHARS, MIN_DETECT_CHARS, CLIENT, ApiError, setBase, runSkill, me };
+module.exports = { SITE, LINKS, MAX_CHARS, MIN_DETECT_CHARS, MIN_REWRITE_WORDS, rewriteWords, CLIENT, ApiError, setBase, runSkill, me };

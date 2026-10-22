@@ -1,6 +1,6 @@
 // What the p3n view says: the score, the sentences, the rewrite, the errors. The wording is the browser
 // extension's and the Word add-in's, so every p3n client reads the same. No vscode here, so the unit tests run in Node.
-const { LINKS, SITE, MAX_CHARS, MIN_DETECT_CHARS, ApiError } = require('./api');
+const { LINKS, SITE, MAX_CHARS, MIN_DETECT_CHARS, MIN_REWRITE_WORDS, rewriteWords, ApiError } = require('./api');
 
 const pct = (x) => Math.round((x || 0) * 100);
 const tone = (x) => (x >= 0.7 ? 'ai' : x >= 0.4 ? 'mid' : 'human');
@@ -15,10 +15,14 @@ function precheck(skill, text, hasKey) {
   if (text.length > limit(hasKey)) {
     return new ApiError(422, 'too_long', hasKey
       ? `That's ${text.length.toLocaleString('en-US')} characters; the API takes up to ${MAX_CHARS.key.toLocaleString('en-US')}. Select less.`
-      : `That's ${text.length.toLocaleString('en-US')} characters. Without an API key p3n takes up to ${MAX_CHARS.free.toLocaleString('en-US')}. Select less, or add a key.`);
+      : `That's ${text.length.toLocaleString('en-US')} characters. Without an API key p3n takes up to ${MAX_CHARS.free.toLocaleString('en-US')}. Select less, or add a key.`,
+    { addKey: !hasKey });
   }
   if (skill === 'detect' && [...text].length < MIN_DETECT_CHARS) {
     return new ApiError(422, 'too_short', `Check needs at least ${MIN_DETECT_CHARS} characters, a sentence or two. Select more.`);
+  }
+  if (skill === 'humanize' && rewriteWords(text) < MIN_REWRITE_WORDS) {
+    return new ApiError(422, 'too_short', 'Rewrite needs at least a sentence of eight words. Select more.');
   }
   return null;
 }
@@ -106,8 +110,17 @@ function error(e) {
     case 'rate_limited':
       return { kind: 'error', lines: [{ text: 'Too many requests at once. Wait a minute and try again.' }], actions: [] };
     default:
-      return { kind: 'error', lines: [{ text: e.message || 'Something went wrong.' }], actions: [] };
+      // "…or add a key" (a selection over the free limit) gets the button that does it.
+      return { kind: 'error', lines: [{ text: e.message || 'Something went wrong.' }], actions: e.addKey ? [{ label: 'Add an API key', command: 'p3n.setKey' }] : [] };
   }
+}
+
+// Why Set API key didn't save the key. Only a refused key needs the API keys page; after a lost connection
+// that button would send the user to fix the wrong thing.
+function keyError(e) {
+  return e.type === 'unauthorized'
+    ? { text: "p3n doesn't accept this key, so it wasn't saved. Copy it again from the API keys page.", keysPage: true }
+    : { text: `p3n couldn't check the key, so it wasn't saved. ${e.message || 'Something went wrong.'}`, keysPage: false };
 }
 
 // The footer: the free calls left, or the key's balance.
@@ -141,4 +154,7 @@ const REFUSED = {
 };
 const refused = (reason) => `${REFUSED[reason] ?? "p3n couldn't put the text back."} Copy the rewrite and paste it instead.`;
 
-module.exports = { pct, tone, LABELS, precheck, badOutput, meta, detect, humanize, error, quota, where, isP3nUrl, undoKey, REPLACED, refused };
+// The title of the diff Show changes opens: "notes.md, line 4 ↔ Rewrite".
+const compareTitle = (where) => `${where} ↔ Rewrite`;
+
+module.exports = { pct, tone, LABELS, precheck, badOutput, meta, detect, humanize, error, keyError, quota, where, compareTitle, isP3nUrl, undoKey, REPLACED, refused };

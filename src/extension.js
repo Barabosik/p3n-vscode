@@ -1,7 +1,7 @@
 // p3n for VS Code: check selected text for AI writing, and rewrite it in place. https://p3n.si
 const vscode = require('vscode');
 const api = require('./api');
-const { P3n, VIEW_ID } = require('./p3n');
+const { P3n, VIEW_ID, DIFF_SCHEME } = require('./p3n');
 const { View } = require('./view');
 const keys = require('./keys');
 
@@ -14,6 +14,7 @@ async function activate(context) {
   const p3n = new P3n(context, view);
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(VIEW_ID, view),
+    vscode.workspace.registerTextDocumentContentProvider(DIFF_SCHEME, p3n),
     vscode.commands.registerCommand('p3n.check', () => p3n.run('detect')),
     vscode.commands.registerCommand('p3n.rewrite', () => p3n.run('humanize')),
     // A key passed in skips the input box: for the tests only, so no other extension can set one.

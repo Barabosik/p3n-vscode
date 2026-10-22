@@ -1,5 +1,5 @@
 // Screenshots from a real VS Code, driven like a user: select a paragraph, run p3n from the right-click menu
-// and the command palette, click Replace selection in the view, undo with Ctrl+Z.
+// and the command palette, click Show changes and Replace selection in the view, undo with Ctrl+Z.
 //
 //   node dev/shots.js            installs the built .vsix into a fresh profile and uses the live API: 2 keyless calls
 //   MOCK=1 node dev/shots.js     loads this folder as a development extension against a stand-in API: no calls
@@ -128,6 +128,9 @@ async function click(x, y) {
 
 async function shot(name) {
   await sleep(350);
+  // MOCK=1 runs p3n as a development extension: drop the title bar's "[Extension Development Host]" so the shots
+  // look like an installed copy.
+  if (MOCK) await evaluate(`document.querySelectorAll('.titlebar *').forEach((e) => { if (!e.childElementCount && e.textContent.includes('[Extension Development Host] ')) e.textContent = e.textContent.replace('[Extension Development Host] ', ''); })`);
   const { data } = await cdp.send('Page.captureScreenshot', { format: 'png' }, page);
   fs.writeFileSync(path.join(OUT, `${name}.png`), Buffer.from(data, 'base64'));
   log('saved', `dev/out/shots/${name}.png`);
@@ -297,6 +300,14 @@ async function setTheme(settingsFile, theme) {
     await shot('rewrite-dark');
     await setTheme(settingsFile, 'Default Light Modern');
     await shot('rewrite-light');
+    // Show changes: the selection and the rewrite in VS Code's diff editor. No call.
+    const cmp = await viewRect('#compare');
+    if (cmp) {
+      await click(cmp.x, cmp.y);
+      await until(() => evaluate(`!!document.querySelector('.monaco-diff-editor')`), 'the diff editor', 10_000);
+      await sleep(800);
+      await shot('compare-light');
+    }
     const rep = await viewRect('#replace');
     if (rep) {
       await click(rep.x, rep.y);

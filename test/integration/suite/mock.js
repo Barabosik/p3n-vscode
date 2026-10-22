@@ -5,7 +5,7 @@ const { FIXTURES } = require('../../fixtures');
 
 const mock = {
   requests: [], // { method, path, headers, body }
-  queue: [], // next answers: { status, body } or { html } or { delayMs }
+  queue: [], // next answers: { status, body } or { html } or { delayMs } or { drop } (no answer: a lost connection)
   server: null,
   reset() { this.requests = []; this.queue = []; },
   calls(path) { return this.requests.filter((r) => !path || r.path === path); },
@@ -34,6 +34,7 @@ function start(port) {
       const a = answer(req, body);
       const send = () => {
         if (res.destroyed) return;
+        if (a.drop) return req.socket.destroy();
         if (a.html) {
           res.writeHead(a.status ?? 502, { 'Content-Type': 'text/html' });
           return res.end(a.html);

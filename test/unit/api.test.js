@@ -108,6 +108,16 @@ test('cancel stops the call and the polling', async () => {
   assert.equal(calls.length, 1);
 });
 
+test("Rewrite's word count is the API's: runs of A to Z, ' and -", () => {
+  assert.equal(api.MIN_REWRITE_WORDS, 8);
+  assert.equal(api.rewriteWords("It's a well-known fact."), 4);
+  // Numbers aren't words, and a letter outside A to Z splits one (the API counts the same way).
+  assert.equal(api.rewriteWords('Q3 2026: 4.2M, up 12%'), 3);
+  assert.equal(api.rewriteWords('Tivolška'), 2);
+  assert.equal(api.rewriteWords(''), 0);
+  assert.equal(api.rewriteWords(undefined), 0);
+});
+
 test('the base URL can point at a stand-in API (tests)', async () => {
   stub({ json: FIXTURES.me });
   api.setBase('http://127.0.0.1:9/');

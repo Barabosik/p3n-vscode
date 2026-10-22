@@ -3,6 +3,7 @@
 const vscode = require('vscode');
 const api = require('./api');
 const { SECRET } = require('./p3n');
+const { keyError } = require('./present');
 
 const KEY_SHAPE = /^p3n_\S+$/;
 const WRONG_SHAPE = 'Keys start with p3n_. Copy the whole key from the API keys page.';
@@ -30,8 +31,8 @@ async function setKey(context, given) {
     vscode.window.showInformationMessage(`p3n: Saved. Signed in as ${m.email}, balance $${Number(m.balance_usd).toFixed(2)}.`);
     return true;
   } catch (e) {
-    const msg = e.type === 'unauthorized' ? "p3n doesn't accept this key, so it wasn't saved. Copy it again from the API keys page." : e.message;
-    vscode.window.showErrorMessage(msg, 'Open API keys').then((pick) => pick && open(api.LINKS.keys));
+    const { text, keysPage } = keyError(e);
+    vscode.window.showErrorMessage(text, ...(keysPage ? ['Open API keys'] : [])).then((pick) => pick && open(api.LINKS.keys));
     return false;
   }
 }
