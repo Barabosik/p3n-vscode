@@ -13,7 +13,7 @@ const open = (url) => vscode.env.openExternal(vscode.Uri.parse(url));
 async function setKey(context, given) {
   const k = (given ?? await vscode.window.showInputBox({
     title: 'p3n API key',
-    prompt: 'Paste your key from p3n.si/dashboard/keys. It is kept in VS Code\'s secret storage on this device.',
+    prompt: "Paste your p3n API key. No key yet? Sign up at p3n.si, then create one at p3n.si/dashboard/keys. It's kept in VS Code's secret storage on this device.",
     placeHolder: 'p3n_…',
     password: true,
     ignoreFocusOut: true,

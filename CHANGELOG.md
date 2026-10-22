@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.2
+
+- The README's Open VSX link is gone: p3n isn't on Open VSX yet. VSCodium, Cursor and Windsurf install the `.vsix` from GitHub Releases.
+- The free-limit message says "free calls", not "free checks". It and the API key prompt ask you to sign up at p3n.si before you create a key.
+- The note under a rewrite says "The rewrite" instead of "Humanize".
+- Wording only; no behaviour changes.
+
 ## 0.1.1
 
 - The README's install steps point to the VS Code Marketplace and Open VSX, with the `.vsix` from GitHub Releases as the fallback.

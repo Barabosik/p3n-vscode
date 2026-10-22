@@ -79,10 +79,10 @@ test('The small line: version, cache, price with a key', () => {
 
 test('Errors: own copy and buttons; Sign up only to p3n.si', () => {
   const limit = present.error(new ApiError(429, 'free_limit', 'x', { retryAfter: 600, signupUrl: 'https://evil.example/' }));
-  assert.equal(limit.lines[0].text, 'The free checks for this hour are used up; more in about 10 min.');
+  assert.equal(limit.lines[0].text, 'The free calls for this hour are used up; more in about 10 min.');
   assert.deepEqual(limit.actions, [{ label: 'Sign up', open: 'https://p3n.si/register', primary: true }, { label: 'Add an API key', command: 'p3n.setKey' }]);
   assert.equal(present.error(new ApiError(429, 'free_limit', 'x', { signupUrl: 'https://p3n.si/register?x=1' })).actions[0].open, 'https://p3n.si/register?x=1');
-  assert.equal(present.error(new ApiError(429, 'free_limit', 'x')).lines[0].text, 'The free checks for this hour are used up.');
+  assert.equal(present.error(new ApiError(429, 'free_limit', 'x')).lines[0].text, 'The free calls for this hour are used up.');
   assert.deepEqual(present.error(new ApiError(402, 'insufficient_credit', 'x')).actions, [{ label: 'Top up', open: 'https://p3n.si/dashboard/billing', primary: true }]);
   assert.equal(present.error(new ApiError(401, 'unauthorized', 'x')).actions[0].command, 'p3n.setKey');
   assert.equal(present.error(new ApiError(429, 'rate_limited', 'x')).lines[0].text, 'Too many requests at once. Wait a minute and try again.');

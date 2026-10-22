@@ -198,7 +198,7 @@ suite('p3n', () => {
   test('Errors read like the other p3n clients, with no script error', async () => {
     const cases = [
       [{ status: 429, body: { error: { type: 'free_limit', message: 'Free calls are used up.', signup_url: 'javascript:alert(1)', retry_after_seconds: 600 } } },
-        /The free checks for this hour are used up; more in about 10 min\.[\s\S]*Sign up[\s\S]*Add an API key/],
+        /The free calls for this hour are used up; more in about 10 min\.[\s\S]*Sign up[\s\S]*Add an API key/],
       [{ status: 502, html: '<!doctype html><title>502</title>Bad gateway' }, /p3n answered 502\./],
       [{ body: { ...FIXTURES.detect, status: 'failed', output: null, error: 'The model provider failed. You were not charged.' } }, /The model provider failed\. You were not charged\./],
       [{ body: { ...FIXTURES.detect, output: { version: 'detect-v9' } } }, /p3n answered without a result\./],
