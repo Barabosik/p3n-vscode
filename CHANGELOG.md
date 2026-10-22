@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.1
+
+- The README's install steps point to the VS Code Marketplace and Open VSX, with the `.vsix` from GitHub Releases as the fallback.
+- No code changes.
+
 ## 0.1.0
 
 First release.

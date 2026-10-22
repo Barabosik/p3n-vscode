@@ -3,6 +3,7 @@
 //
 //   node dev/shots.js            installs the built .vsix into a fresh profile and uses the live API: 2 keyless calls
 //   MOCK=1 node dev/shots.js     loads this folder as a development extension against a stand-in API: no calls
+//   SMOKE=1 node dev/shots.js    installs the built .vsix and checks it loads (right-click items, the view): no calls
 //
 // Writes dev/out/shots/*.png. The VS Code window opens on screen for about a minute; the script drives it over
 // the Chrome DevTools Protocol, so it doesn't need focus. VSIX=path picks the package, PORT the debugging port.
@@ -231,9 +232,10 @@ async function setTheme(settingsFile, theme) {
     const r = cp.spawnSync(cli, [...cliArgs, ...args, '--install-extension', vsix], { encoding: 'utf8', shell: process.platform === 'win32' });
     log((r.stdout + r.stderr).trim());
     if (r.status !== 0) throw new Error('Installing the .vsix failed.');
+    log('installed:', fs.readdirSync(extensions).filter((d) => d.startsWith('nikita-andreiev.')).join(', '));
   }
 
-  log(MOCK ? 'stand-in API, development extension' : `live API, installed ${path.basename(process.env.VSIX || `p3n-vscode-${version}.vsix`)}`);
+  log(MOCK ? 'stand-in API, development extension' : `${process.env.SMOKE ? 'install check' : 'live API'}, installed ${path.basename(process.env.VSIX || `p3n-vscode-${version}.vsix`)}`);
   const code = cp.spawn(exe, [...args, `--remote-debugging-port=${PORT}`, '--disable-workspace-trust', '--skip-welcome', '--skip-release-notes', '--new-window', workspace, path.join(workspace, 'essay.md')], { env, stdio: 'ignore' });
   let calls = 0;
   try {
@@ -251,6 +253,22 @@ async function setTheme(settingsFile, theme) {
     }
     await until(async () => (await editorText()).includes('Team update'), 'essay.md in the editor', 60_000);
     await sleep(2500);
+
+    // SMOKE=1: the installed package loads, with both items in the right-click menu and the view drawn. No calls.
+    if (process.env.SMOKE && !MOCK) {
+      await selectLine(3);
+      await press('Shift+F10');
+      await until(async () => (await menuItem('p3n: Check for AI')) && menuItem('p3n: Rewrite'), 'p3n in the right-click menu', 15_000);
+      log('right-click menu: p3n: Check for AI, p3n: Rewrite');
+      await press('Escape');
+      const icon = await evaluate(`(() => { const a = [...document.querySelectorAll('.activitybar .action-label')].find((e) => /^p3n/i.test(e.getAttribute('aria-label') || '')); const r = a?.getBoundingClientRect(); return r && { x: r.x + r.width / 2, y: r.y + r.height / 2 }; })()`);
+      if (!icon) throw new Error('No p3n icon in the activity bar.');
+      await click(icon.x, icon.y);
+      const text = await until(async () => /Free without a key/.test((await viewText()) ?? '') && viewText(), 'the p3n view', 20_000);
+      log('view:', text.split(/\n/).filter(Boolean).join(' | '));
+      await shot('smoke');
+      return;
+    }
 
     // 1. Check for AI from the right-click menu.
     await selectLine(3);
@@ -296,7 +314,7 @@ async function setTheme(settingsFile, theme) {
     console.error('[shots] failed:', e.stack ?? e);
     process.exitCode = 1;
   } finally {
-    log(`${MOCK ? 'stand-in' : 'live'} API calls made: ${calls}`);
+    log(`${MOCK ? 'stand-in' : 'live'} API calls made: ${calls}`);  // SMOKE makes none
     // A closed socket never answers: don't wait on it.
     await Promise.race([cdp?.send('Browser.close').catch(() => {}), sleep(2000)]);
     await sleep(1500);

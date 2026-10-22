@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://marketplace.visualstudio.com/items?itemName=nikita-andreiev.p3n-vscode">VS Code Marketplace</a> · <a href="https://p3n.si">p3n.si</a> · <a href="https://nikita-andreiev.com/p3n/">All p3n apps</a>
+  <a href="https://marketplace.visualstudio.com/items?itemName=nikita-andreiev.p3n-vscode">VS Code Marketplace</a> · <a href="https://open-vsx.org/extension/nikita-andreiev/p3n-vscode">Open VSX</a> · <a href="https://p3n.si">p3n.si</a> · <a href="https://nikita-andreiev.com/p3n/">All p3n apps</a>
 </p>
 
 <p align="center">
@@ -55,26 +55,26 @@ code --install-extension nikita-andreiev.p3n-vscode
 
 Marketplace installs update themselves. You need VS Code 1.90 or later.
 
-### Open VSX
+### From Open VSX
 
-The listing on Open VSX, the store VSCodium, Cursor and Windsurf use, is coming soon. Until then, install the `.vsix` below in those editors.
+For VSCodium, Cursor and Windsurf: install [p3n from Open VSX](https://open-vsx.org/extension/nikita-andreiev/p3n-vscode), or search for **p3n** in their Extensions view.
 
 ### Install from VSIX
 
-If you can't use the Marketplace, install the `.vsix` file from a release. It's the same package the Marketplace has.
+If you can't use either store, install the `.vsix` file from a release. It's the same package the stores have.
 
-1. Download `p3n-vscode-0.1.0.vsix` from the [latest release](https://github.com/Barabosik/p3n-vscode/releases/latest).
+1. Download the `.vsix` file from the [latest release](https://github.com/Barabosik/p3n-vscode/releases/latest).
 2. In VS Code, open the Extensions view (Ctrl+Shift+X, or Cmd+Shift+X on a Mac).
 3. Click **…** at the top of the view, choose **Install from VSIX…** and pick the file.
 4. The p3n pen appears in the activity bar. Select some text and right-click it to start.
 
-From a terminal, `code --install-extension p3n-vscode-0.1.0.vsix` does the same. VSCodium, Cursor and Windsurf install a `.vsix` the same way.
+From a terminal, `code --install-extension` with the file's path does the same. VSCodium, Cursor and Windsurf install a `.vsix` the same way.
 
-An install from a `.vsix` doesn't update itself. To update, install the next release's file over it, or install p3n from the Marketplace instead.
+An install from a `.vsix` doesn't update itself. To update, install the next release's file over it, or install p3n from a store instead.
 
 ### From source
 
-Run `npm ci` and `npm run package`, then install `p3n-vscode-0.1.0.vsix` as above.
+Run `npm ci` and `npm run package`, then install the `p3n-vscode-<version>.vsix` it writes, as above.
 
 ## Known gaps
 

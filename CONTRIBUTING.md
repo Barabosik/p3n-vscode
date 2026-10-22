@@ -29,7 +29,7 @@ npm run test:integration
 1. it selects a paragraph, runs Check for AI from the right-click menu, and switches the theme;
 2. it runs Rewrite from the command palette, clicks Replace selection, and presses Ctrl+Z.
 
-The shots go to `dev/out/shots/`. This run uses the live API: 2 of the free hourly calls. `MOCK=1 node dev/shots.js` loads this folder as a development extension against canned answers instead, with no calls.
+The shots go to `dev/out/shots/`. This run uses the live API: 2 of the free hourly calls. `MOCK=1 node dev/shots.js` loads this folder as a development extension against canned answers instead, with no calls. `SMOKE=1 node dev/shots.js` only checks that the installed `.vsix` loads: the right-click items and the view, with no calls.
 
 ## Package
 
@@ -38,7 +38,7 @@ The shots go to `dev/out/shots/`. This run uses the live API: 2 of the free hour
 ## Release
 
 1. Raise `version` in package.json and add a CHANGELOG entry.
-2. Package and test the `.vsix` (the integration tests, then `node dev/shots.js` in a real VS Code).
+2. Package and test the `.vsix`: the unit and integration tests, then `SMOKE=1 node dev/shots.js` (or `node dev/shots.js` when the view changed) in a real VS Code.
 3. Tag the commit `v<version>` and push the tag.
 4. Make a GitHub release from the tag, with the CHANGELOG entry and the tested `.vsix` attached.
 

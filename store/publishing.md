@@ -14,7 +14,7 @@ package.json and building again.
    - **ID** `nikita-andreiev`. It can't be changed later.
    - **Name** `Nikita Andreiev`.
    - Website https://nikita-andreiev.com, plus the GitHub link if you like.
-3. Click **New extension** › **Visual Studio Code**, and upload `p3n-vscode-0.1.0.vsix`.
+3. Click **New extension** › **Visual Studio Code**, and upload `p3n-vscode-<version>.vsix`.
 4. Wait until the status changes from "Verifying" to the version number. It's then live at
    https://marketplace.visualstudio.com/items?itemName=nikita-andreiev.p3n-vscode.
 
@@ -37,7 +37,7 @@ line or CI. Since 2026 a new Azure DevOps organisation needs an Azure subscripti
 5. In this folder, run:
    ```bash
    npx ovsx create-namespace nikita-andreiev -p <token>
-   npx ovsx publish p3n-vscode-0.1.0.vsix -p <token>
+   npx ovsx publish p3n-vscode-<version>.vsix -p <token>
    ```
 6. It's live at https://open-vsx.org/extension/nikita-andreiev/p3n-vscode.
 7. Optional: claim the namespace, so the page doesn't say "not a verified publisher".
@@ -46,7 +46,7 @@ line or CI. Since 2026 a new Azure DevOps organisation needs an Azure subscripti
 
 ## After both are live
 
-- README › Install: replace "coming soon" with the two store links, and keep "Install from VSIX" for people who
-  can't use the stores.
+- README › Install: done in 0.1.1. It lists both stores first, with "Install from VSIX" for people who can't use
+  them.
 - The p3n install page (https://nikita-andreiev.com/p3n/) and the portfolio can link to it. That page lives in the
   website repo.
