@@ -16,7 +16,7 @@ The VS Code Marketplace and Open VSX build the listing from the package itself. 
 | Links | p3n.si, GitHub repo, issues (also the Q&A link) | `homepage`, `repository`, `bugs`, `qna` |
 | Licence | MIT | `license`, `LICENSE` |
 | Page | README: what it does, use, free or with a key, privacy, install, known gaps, open source | `README.md` |
-| Screenshots | `images/check-light.png`, `images/rewrite-dark.png` (1920×1200, from `dev/shots.js`) | README; vsce turns the relative links into GitHub URLs |
+| Screenshots | `images/check-light.png`, `images/rewrite-dark.png`, `images/compare-light.png` (1920×1200, from `dev/shots.js`) | README; vsce turns the relative links into GitHub URLs |
 | Changelog tab | `CHANGELOG.md` | |
 
 Both stores show the README's images from GitHub, so the repo must be public before the first upload.
@@ -29,11 +29,13 @@ without an account. Open source, no telemetry.
 
 ## Screenshots
 
-From the live API with the installed .vsix (`node dev/shots.js`):
+`check-light.png` is from the live API with the installed .vsix (`node dev/shots.js`). Since 0.1.3, `rewrite-dark.png` and
+`compare-light.png` are from `MOCK=1 node dev/shots.js`: the same run against canned answers, with no calls.
 - `check-light.png`: Check for AI on a paragraph, Light Modern theme.
 - `check-dark.png`: the same, Dark Modern.
 - `rewrite-dark.png`, `rewrite-light.png`: Rewrite, before Replace.
+- `compare-light.png`: Show changes, the selection and the rewrite in VS Code's diff editor.
 - `replaced-light.png`: after Replace selection, the rewrite selected in the editor.
 - `menu.png`: p3n's two commands in the editor's right-click menu.
 
-The README uses `check-light.png` and `rewrite-dark.png`, copied to `images/`.
+The README uses `check-light.png`, `rewrite-dark.png` and `compare-light.png`, copied to `images/`.

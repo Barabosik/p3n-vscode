@@ -23,7 +23,7 @@
 ## What it does
 
 - **Check for AI.** A score, a one-line reason, and the sentences that give it away.
-- **Rewrite.** A version that keeps your facts and drops the filler. **Replace selection** puts it where your selection was, as one undo step.
+- **Rewrite.** A version that keeps your facts and drops the filler. **Show changes** opens it next to your selection in VS Code's diff editor, and **Replace selection** puts it where your selection was, as one undo step.
 - Results open in the p3n view in the side bar, in your light or dark theme.
 - Works on any text you can select: Markdown, plain text, docs, comments, commit messages.
 
@@ -31,13 +31,36 @@
 
 ## Use
 
-1. Select text in an editor.
-2. Right-click it and choose **p3n: Check for AI** or **p3n: Rewrite**. Both are in the command palette (Ctrl+Shift+P) too, and the p3n view has buttons for them.
-3. After a rewrite, click **Replace selection**. Ctrl+Z (Cmd+Z on a Mac) in the editor undoes it. **Copy** and **Try another rewrite** are next to it.
+1. Select text in an editor. Check needs at least 40 characters, and Rewrite a sentence of eight words.
+2. Right-click it and choose **p3n: Check for AI** or **p3n: Rewrite**. Both are in the command palette (Ctrl+Shift+P, or Cmd+Shift+P on a Mac) too, and the p3n view has buttons for them. **Cancel** under the progress bar stops a run.
+3. After a rewrite, **Show changes** opens your selection and the rewrite side by side in VS Code's diff editor. Nothing in your file changes until you click **Replace selection**; Ctrl+Z (Cmd+Z on a Mac) in the editor undoes it. **Copy** and **Try another rewrite** are next to it.
+
+![Show changes: the selection and the rewrite in VS Code's diff editor](images/compare-light.png)
+
+## Commands and shortcuts
+
+| Command | ID | Where |
+| --- | --- | --- |
+| p3n: Check for AI | `p3n.check` | Right-click a selection, the command palette, the p3n view |
+| p3n: Rewrite | `p3n.rewrite` | Right-click a selection, the command palette, the p3n view |
+| p3n: Set API key | `p3n.setKey` | The command palette, or **Add API key** at the top of the p3n view |
+| p3n: Remove API key | `p3n.removeKey` | The command palette once a key is set, or **API key** at the top of the p3n view |
+
+p3n sets no keyboard shortcuts, so it never takes keys you already use. To add your own, open **Keyboard Shortcuts** (Ctrl+K Ctrl+S, or Cmd+K Cmd+S on a Mac), search for **p3n**, double-click a command and press the keys. VS Code shows if they're already in use. Or add them to `keybindings.json`:
+
+```jsonc
+// The keys are an example: pick ones that are free on your keyboard.
+[
+  { "key": "ctrl+alt+shift+c", "command": "p3n.check", "when": "editorHasSelection" },
+  { "key": "ctrl+alt+shift+r", "command": "p3n.rewrite", "when": "editorHasSelection" }
+]
+```
+
+p3n has no settings. The API key isn't one: it's kept in secret storage, as below.
 
 ## Free, or with a key
 
-You get 10 checks or rewrites an hour without an account, up to 5,000 characters each. For more, [sign up at p3n.si](https://p3n.si/register) (you get free credit), make a key on the [API keys](https://p3n.si/dashboard/keys) page, and run **p3n: Set API key**. With a key, p3n takes up to 200,000 characters and bills your p3n balance.
+You get 10 checks or rewrites an hour without an account, up to 5,000 characters each. For more, [sign up at p3n.si](https://p3n.si/register) (you get free credit), make a key on the [API keys](https://p3n.si/dashboard/keys) page, and run **p3n: Set API key** (or click **Add API key** in the p3n view). p3n checks the key before it saves it, so a typo never replaces a key that works. With a key, p3n takes up to 200,000 characters and bills your p3n balance.
 
 The key is kept in VS Code's secret storage, encrypted with your system's keychain. It's never written to settings.json and isn't synced. **p3n: Remove API key** deletes it.
 
