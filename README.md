@@ -22,7 +22,7 @@
 
 ## What it does
 
-- **Check for AI.** A score, a one-line reason, and the sentences that give it away.
+- **Check for AI.** A score, a one-line reason, and the sentences that give it away, highlighted in your text.
 - **Rewrite.** A version that keeps your facts and drops the filler. **Show changes** opens it next to your selection in VS Code's diff editor, and **Replace selection** puts it where your selection was, as one undo step.
 - Results open in the p3n view in the side bar, in your light or dark theme.
 - Works on any text you can select: Markdown, plain text, docs, comments, commit messages.
@@ -33,7 +33,8 @@
 
 1. Select text in an editor. Check needs at least 40 characters, and Rewrite a sentence of eight words.
 2. Right-click it and choose **p3n: Check for AI** or **p3n: Rewrite**. Both are in the command palette (Ctrl+Shift+P, or Cmd+Shift+P on a Mac) too, and the p3n view has buttons for them. **Cancel** under the progress bar stops a run.
-3. After a rewrite, **Show changes** opens your selection and the rewrite side by side in VS Code's diff editor. Nothing in your file changes until you click **Replace selection**; Ctrl+Z (Cmd+Z on a Mac) in the editor undoes it. **Copy** and **Try another rewrite** are next to it.
+3. After a check, the sentences it lists are highlighted in your text. Hover one to see why. Editing the file, running p3n again or **Clear highlights** in the view removes them.
+4. After a rewrite, **Show changes** opens your selection and the rewrite side by side in VS Code's diff editor. Nothing in your file changes until you click **Replace selection**; Ctrl+Z (Cmd+Z on a Mac) in the editor undoes it. **Copy** and **Try another rewrite** are next to it.
 
 ![Show changes: the selection and the rewrite in VS Code's diff editor](images/compare-light.png)
 
@@ -43,6 +44,7 @@
 | --- | --- | --- |
 | p3n: Check for AI | `p3n.check` | Right-click a selection, the command palette, the p3n view |
 | p3n: Rewrite | `p3n.rewrite` | Right-click a selection, the command palette, the p3n view |
+| p3n: Clear highlights | `p3n.clearHighlights` | The command palette while a check's highlights are shown, or **Clear highlights** in the p3n view |
 | p3n: Set API key | `p3n.setKey` | The command palette, or **Add API key** at the top of the p3n view |
 | p3n: Remove API key | `p3n.removeKey` | The command palette once a key is set, or **API key** at the top of the p3n view |
 | p3n: Open p3n.si | `p3n.openSite` | The command palette, or **p3n.si ↗** at the bottom of the p3n view |
@@ -57,7 +59,7 @@ p3n sets no keyboard shortcuts, so it never takes keys you already use. To add y
 ]
 ```
 
-p3n has no settings. The API key isn't one: it's kept in secret storage, as below.
+p3n has no settings. The API key isn't one: it's kept in secret storage, as below. The highlight colours are theme colours (`p3n.sentenceBackground`, `p3n.sentenceUnderline`, `p3n.hitBackground`, `p3n.hitUnderline`), so `workbench.colorCustomizations` can change them.
 
 ## Free, or with a key
 

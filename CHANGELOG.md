@@ -2,6 +2,8 @@
 
 ## 0.1.4
 
+- After **Check for AI**, the sentences it lists are highlighted in your text: a tint with a solid underline for the sentences that read as AI, a lighter one with a dotted underline for the pattern hits. Hover one to see why. They go when you edit the file, run p3n again, or click **Clear highlights** in the view; **p3n: Clear highlights** in the command palette does the same. A sentence p3n can't find in your selection stays in the view's list only.
+- The highlight colours are theme colours (`p3n.sentenceBackground`, `p3n.sentenceUnderline`, `p3n.hitBackground`, `p3n.hitUnderline`), so a theme or `workbench.colorCustomizations` can change them.
 - A **p3n.si ↗** link at the bottom of the p3n view, under the free calls or your balance, opens p3n.si in your browser. It's there with or without an API key.
 - **p3n: Open p3n.si** in the command palette does the same.
 

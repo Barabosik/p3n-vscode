@@ -8,6 +8,8 @@ Plain JavaScript with no bundler and no runtime dependencies. VS Code loads `src
 - `src/p3n.js`: the state. It takes the editor's selection, calls p3n, keeps the result, shows a rewrite next to the selection in VS Code's diff editor (two read-only `p3n:` documents in memory), and puts it back with one `TextEditor.edit`, so a single undo reverts it.
 - `src/api.js`: the API client. It's the same code as the browser extension's and the Word add-in's, in CommonJS.
 - `src/present.js`: everything the view says. The wording matches the other p3n clients, and it doesn't use `vscode`, so it's unit-tested in plain Node.
+- `src/marks.js`: finds the sentences a Check lists in the checked text, for the highlights. It doesn't use `vscode` either.
+- `src/highlights.js`: draws those highlights in the editor and clears them on an edit, the next run, or Clear highlights.
 - `src/keys.js`: the API key commands. The key goes in `context.secrets`, never in settings.
 - `src/view.js` and `media/`: the webview in the side bar. It draws the state it's sent, using VS Code's theme colours, and posts clicks back. Its content security policy allows only its own script and styles.
 

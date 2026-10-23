@@ -105,6 +105,8 @@
       m.confidence ? h('p', { class: 'small muted' }, m.confidence) : null,
       m.sentences.length ? quotes('Sentences that read as AI', m.sentences, true) : null,
       m.hits.length ? quotes('Pattern hits', m.hits, false) : null,
+      // The listed sentences are highlighted in the editor until an edit, the next run, or this.
+      m.marked ? h('div', { class: 'row' }, h('button', { type: 'button', class: 'link small', id: 'clear', onclick: () => send({ type: 'clear' }) }, 'Clear highlights')) : null,
       h('p', { class: 'small muted' }, m.foot),
     ];
   }

@@ -60,6 +60,10 @@
         "title": "p3n: Rewrite"
       },
       {
+        "command": "p3n.clearHighlights",
+        "title": "p3n: Clear highlights"
+      },
+      {
         "command": "p3n.setKey",
         "title": "p3n: Set API key"
       },
@@ -87,11 +91,57 @@
       ],
       "commandPalette": [
         {
+          "command": "p3n.clearHighlights",
+          "when": "p3n.hasHighlights"
+        },
+        {
           "command": "p3n.removeKey",
           "when": "p3n.hasKey"
         }
       ]
     },
+    "colors": [
+      {
+        "id": "p3n.sentenceBackground",
+        "description": "Background of a sentence that p3n's Check for AI lists as reading like AI.",
+        "defaults": {
+          "light": "#c2410c24",
+          "dark": "#e0977433",
+          "highContrast": "#e0977433",
+          "highContrastLight": "#c2410c24"
+        }
+      },
+      {
+        "id": "p3n.sentenceUnderline",
+        "description": "Solid underline and overview ruler mark of a sentence that p3n's Check for AI lists as reading like AI.",
+        "defaults": {
+          "light": "#c2410c",
+          "dark": "#e09774",
+          "highContrast": "#e09774",
+          "highContrastLight": "#c2410c"
+        }
+      },
+      {
+        "id": "p3n.hitBackground",
+        "description": "Background of a sentence with a pattern hit from p3n's Check for AI.",
+        "defaults": {
+          "light": "#c2410c12",
+          "dark": "#e097741a",
+          "highContrast": "#e097741a",
+          "highContrastLight": "#c2410c12"
+        }
+      },
+      {
+        "id": "p3n.hitUnderline",
+        "description": "Dotted underline and overview ruler mark of a sentence with a pattern hit from p3n's Check for AI.",
+        "defaults": {
+          "light": "#c2410ca6",
+          "dark": "#e09774a6",
+          "highContrast": "#e09774",
+          "highContrastLight": "#c2410c"
+        }
+      }
+    ],
     "viewsContainers": {
       "activitybar": [
         {

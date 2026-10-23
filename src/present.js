@@ -42,20 +42,27 @@ function meta(run, hasKey) {
   return `${run.output?.version ?? run.skill}${run.cached ? ' · from cache' : ''}${hasKey && Number(run.charged_usd) ? ` · $${Number(run.charged_usd).toFixed(4)}` : ''}`;
 }
 
-function detect(o) {
-  const shownSentences = (o.sentences ?? []).slice(0, 5);
+// The sentences a Check lists, whole: the view shows them, and the editor highlights them (marks.js).
+function listed(o) {
+  const sentences = (o.sentences ?? []).slice(0, 5).map((s) => ({ why: s.why || null, text: s.text }));
   // A pattern hit is listed only if its sentence isn't already among the sentences.
-  const shown = new Set(shownSentences.map((s) => norm(s.text)));
+  const shown = new Set(sentences.map((s) => norm(s.text)));
+  const hits = (o.examples ?? []).filter((e) => !shown.has(norm(e.sentence))).slice(0, 6).map((e) => ({
+    why: (e.rules ?? []).map((r) => String(r.name ?? '').replace(/\s*\(LLM\)$/, '')).join(' · '),
+    text: e.sentence,
+  }));
+  return { sentences, hits };
+}
+
+function detect(o) {
+  const { sentences, hits } = listed(o);
   return {
     kind: 'detect',
     score: { label: LABELS[o.label] ?? 'Unknown', from: 0, to: pct(o.ai), tone: tone(o.ai), unit: 'likely AI' },
     verdict: o.verdict || null,
     confidence: o.confidence?.level ? `Confidence ${o.confidence.level}: ${o.confidence.reason ?? ''}` : null,
-    sentences: shownSentences.map((s) => ({ why: s.why || null, text: clip(s.text) })),
-    hits: (o.examples ?? []).filter((e) => !shown.has(norm(e.sentence))).slice(0, 6).map((e) => ({
-      why: (e.rules ?? []).map((r) => String(r.name ?? '').replace(/\s*\(LLM\)$/, '')).join(' · '),
-      text: clip(e.sentence),
-    })),
+    sentences: sentences.map((s) => ({ ...s, text: clip(s.text) })),
+    hits: hits.map((e) => ({ ...e, text: clip(e.text) })),
     foot: 'A score is a probability, not proof. Read the sentences yourself before deciding anything about a person.',
   };
 }
@@ -157,4 +164,4 @@ const refused = (reason) => `${REFUSED[reason] ?? "p3n couldn't put the text bac
 // The title of the diff Show changes opens: "notes.md, line 4 ↔ Rewrite".
 const compareTitle = (where) => `${where} ↔ Rewrite`;
 
-module.exports = { pct, tone, LABELS, precheck, badOutput, meta, detect, humanize, error, keyError, quota, where, compareTitle, isP3nUrl, undoKey, REPLACED, refused };
+module.exports = { pct, tone, LABELS, precheck, badOutput, meta, listed, detect, humanize, error, keyError, quota, where, compareTitle, isP3nUrl, undoKey, REPLACED, refused };

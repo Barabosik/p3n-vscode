@@ -3,6 +3,8 @@
 const vscode = require('vscode');
 const api = require('./api');
 const present = require('./present');
+const { marks } = require('./marks');
+const { Highlights } = require('./highlights');
 
 const SECRET = 'p3n.apiKey';
 const VIEW_ID = 'p3n.view';
@@ -27,6 +29,7 @@ class P3n {
     this.lastEditor = vscode.window.activeTextEditor;
     this.test = context.extensionMode === vscode.ExtensionMode.Test;
     this.rendered = new vscode.EventEmitter(); // the view's text after each draw (tests only)
+    this.highlights = new Highlights(() => this.highlightsChanged());
     view.onMessage = (m) => this.onMessage(m);
   }
 
@@ -35,6 +38,7 @@ class P3n {
     this.keyChanged();
     this.context.subscriptions.push(
       this.rendered,
+      this.highlights,
       // Another window saved or removed the key.
       this.context.secrets.onDidChange(async (e) => {
         if (e.key !== SECRET) return;
@@ -67,6 +71,14 @@ class P3n {
 
   post() { this.view.post(this.state()); }
 
+  // The view's Clear highlights button and the palette's command show only while there are highlights.
+  highlightsChanged() {
+    const on = !!this.highlights.current;
+    vscode.commands.executeCommand('setContext', 'p3n.hasHighlights', on);
+    if (this.result?.kind === 'detect') this.result.marked = on;
+    this.post();
+  }
+
   show(model) {
     this.result = model;
     this.seq++;
@@ -93,6 +105,7 @@ class P3n {
       const name = ed.document.uri.path.split('/').pop() || 'Untitled';
       src = {
         uri: ed.document.uri,
+        version: ed.document.version,
         range: new vscode.Range(sel.start, sel.end),
         selected,
         sent: selected.trim(),
@@ -107,6 +120,7 @@ class P3n {
     this.source = src;
     this.result = null;
     this.busy = null;
+    this.highlights.clear();
     await this.view.reveal();
 
     const pre = present.precheck(skill, src.sent, !!this.key);
@@ -126,6 +140,8 @@ class P3n {
         const model = skill === 'detect' ? present.detect(run.output) : present.humanize(run.output, src.sent, src.selected);
         model.meta = present.meta(run, !!this.key);
         if (model.kind === 'humanize') model.replace = src.replaced ? null : { state: 'ready' };
+        // The listed sentences, highlighted in the checked text, unless it changed while p3n checked.
+        if (model.kind === 'detect') model.marked = this.highlights.show(src, marks(src.selected, run.output));
         this.show(model);
       } catch (e) {
         if (e.free != null) this.free = e.free;
@@ -238,6 +254,7 @@ class P3n {
       case 'replace': return this.replace();
       case 'compare': return this.compare();
       case 'copy': return this.copy();
+      case 'clear': return this.highlights.clear();
       case 'account': return vscode.commands.executeCommand('p3n.account');
       case 'command': return VIEW_COMMANDS.has(m.id) && vscode.commands.executeCommand(m.id);
       // Links go only to p3n's own site.

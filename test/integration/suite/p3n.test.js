@@ -26,6 +26,8 @@ async function waitFor(fn, what, ms = 10_000) {
 }
 // The view's text once it matches (the view posts its text after every draw).
 const shows = (re, ms) => waitFor(() => re.test(p3n.lastRendered?.text ?? '') && p3n.lastRendered.text, `the view to show ${re}`, ms);
+// The highlights set on an editor. The API can't read decorations back, so p3n keeps what it set.
+const shownOn = (ed) => p3n.highlights.shown.get(ed) ?? [];
 
 async function openEssay() {
   doc = await vscode.workspace.openTextDocument(path.join(vscode.workspace.workspaceFolders[0].uri.fsPath, 'essay.md'));
@@ -74,10 +76,12 @@ setup(async () => {
 suite('p3n', () => {
   test('commands, menus and the view are contributed', async () => {
     const all = await vscode.commands.getCommands(true);
-    for (const c of ['p3n.check', 'p3n.rewrite', 'p3n.setKey', 'p3n.removeKey', 'p3n.openSite']) assert.ok(all.includes(c), c);
+    for (const c of ['p3n.check', 'p3n.rewrite', 'p3n.clearHighlights', 'p3n.setKey', 'p3n.removeKey', 'p3n.openSite']) assert.ok(all.includes(c), c);
     const { contributes } = vscode.extensions.getExtension(EXT_ID).packageJSON;
-    assert.deepEqual(contributes.commands.map((c) => c.title), ['p3n: Check for AI', 'p3n: Rewrite', 'p3n: Set API key', 'p3n: Remove API key', 'p3n: Open p3n.si']);
+    assert.deepEqual(contributes.commands.map((c) => c.title), ['p3n: Check for AI', 'p3n: Rewrite', 'p3n: Clear highlights', 'p3n: Set API key', 'p3n: Remove API key', 'p3n: Open p3n.si']);
     assert.deepEqual(contributes.menus['editor/context'].map((m) => [m.command, m.when]), [['p3n.check', 'editorHasSelection'], ['p3n.rewrite', 'editorHasSelection']]);
+    assert.deepEqual(contributes.menus.commandPalette.map((m) => [m.command, m.when]), [['p3n.clearHighlights', 'p3n.hasHighlights'], ['p3n.removeKey', 'p3n.hasKey']]);
+    assert.deepEqual(contributes.colors.map((c) => c.id), ['p3n.sentenceBackground', 'p3n.sentenceUnderline', 'p3n.hitBackground', 'p3n.hitUnderline']);
     assert.equal(contributes.views.p3n[0].type, 'webview');
   });
 
@@ -121,6 +125,88 @@ suite('p3n', () => {
     assert.equal(req.headers['x-p3n-client'], `p3n-vscode/${version}`);
     assert.equal(req.headers.authorization, undefined);
     assert.deepEqual(req.body, { text: AI_TEXT });
+  });
+
+  test('Check highlights the listed sentences in the editor, with the reason on hover; an edit clears them', async () => {
+    select(AI_TEXT);
+    await check();
+    assert.ok((await shows(/Likely AI-written/)).includes('Clear highlights'));
+    const base = doc.getText().indexOf(AI_TEXT);
+    const marks = shownOn(editor);
+    assert.deepEqual(marks.map((m) => [m.kind, doc.getText(m.range), m.why]), [
+      ['sentence', AI_TEXT.split('. ')[0] + '.', 'A stock opening with a vague claim.'],
+      ['hit', AI_TEXT.split('. ')[1], 'Filler verb · Abstract benefit'],
+    ]);
+    assert.deepEqual(marks.map((m) => doc.offsetAt(m.range.start) - base), [0, AI_TEXT.indexOf('Moreover')]);
+    // Any edit to the document clears them. The view keeps its list and drops the button.
+    p3n.lastRendered = null;
+    await editor.edit((eb) => eb.insert(doc.positionAt(doc.getText().length), ' '));
+    await waitFor(() => !p3n.highlights.current, 'the highlights to clear');
+    assert.deepEqual(shownOn(editor), []);
+    const text = await waitFor(() => p3n.lastRendered && !p3n.lastRendered.text.includes('Clear highlights') && p3n.lastRendered.text, 'the view to drop Clear highlights');
+    assert.ok(text.includes('Sentences that read as AI'));
+    await restore();
+  });
+
+  test('Highlights come back when the editor is shown again; the command, the button and the next run clear them', async () => {
+    select(AI_TEXT);
+    await check();
+    await shows(/Clear highlights/);
+    assert.equal(shownOn(editor).length, 2);
+    // Another file over it in the same group, then closed: the editor that shows the essay again is marked too.
+    const other = await vscode.workspace.openTextDocument({ content: 'Another file.' });
+    await vscode.window.showTextDocument(other, { preview: false });
+    await waitFor(() => !vscode.window.visibleTextEditors.some((e) => e.document === doc), 'the essay to be hidden');
+    await vscode.commands.executeCommand('workbench.action.revertAndCloseActiveEditor');
+    editor = await waitFor(() => vscode.window.visibleTextEditors.find((e) => e.document === doc), 'the essay to be shown again');
+    await waitFor(() => shownOn(editor).length === 2, 'the highlights on the essay again');
+
+    await vscode.commands.executeCommand('p3n.clearHighlights');
+    assert.equal(p3n.highlights.current, null);
+    assert.deepEqual(shownOn(editor), []);
+
+    select(AI_TEXT);
+    await check();
+    await shows(/Clear highlights/);
+    await p3n.onMessage({ type: 'clear' });
+    assert.equal(p3n.highlights.current, null);
+    await waitFor(() => !p3n.lastRendered.text.includes('Clear highlights'), 'the view to drop Clear highlights');
+
+    // The next Check clears them as it starts, and the next Rewrite does too.
+    select(AI_TEXT);
+    await check();
+    await shows(/Clear highlights/);
+    mock.queue.push({ delayMs: 1500, body: FIXTURES.detect });
+    select(AI_TEXT);
+    const running = check();
+    await waitFor(() => !p3n.highlights.current && !shownOn(editor).length, 'the highlights to clear as the Check starts', 1000);
+    await running;
+    assert.equal(shownOn(editor).length, 2);
+    select(SHORT);
+    await rewrite();
+    await shows(/No longer reads as AI/);
+    assert.equal(p3n.highlights.current, null);
+    assert.deepEqual(shownOn(editor), []);
+  });
+
+  test('No highlights if the document changed while p3n checked, or for a sentence outside the selection', async () => {
+    mock.queue.push({ delayMs: 1500, body: FIXTURES.detect });
+    select(AI_TEXT);
+    const running = check();
+    await sleep(300);
+    await editor.edit((eb) => eb.insert(doc.positionAt(doc.getText().length), ' '));
+    await running;
+    assert.ok(!(await shows(/Likely AI-written/)).includes('Clear highlights'));
+    assert.equal(p3n.highlights.current, null);
+    assert.deepEqual(shownOn(editor), []);
+    await restore();
+
+    // The answer lists the first sentence, which isn't in the selection: only the pattern hit inside it is marked.
+    select(AI_TEXT.split('. ')[1]);
+    await check();
+    await shows(/Clear highlights/);
+    assert.deepEqual(shownOn(editor).map((m) => [m.kind, doc.getText(m.range)]), [['hit', AI_TEXT.split('. ')[1]]]);
+    await vscode.commands.executeCommand('p3n.clearHighlights');
   });
 
   test('Rewrite, then Replace selection: one undo step brings the text back', async () => {
