@@ -21,6 +21,7 @@ async function activate(context) {
     vscode.commands.registerCommand('p3n.setKey', (given) => keys.setKey(context, production || typeof given !== 'string' ? undefined : given)),
     vscode.commands.registerCommand('p3n.removeKey', () => keys.removeKey(context)),
     vscode.commands.registerCommand('p3n.account', () => keys.accountMenu(context, !!p3n.key)),
+    vscode.commands.registerCommand('p3n.openSite', () => vscode.env.openExternal(vscode.Uri.parse(`${api.SITE}/`))),
   );
   await p3n.init();
   // The tests read the state and the view's text through this.

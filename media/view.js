@@ -204,7 +204,13 @@
   els.rewrite.addEventListener('click', () => send({ type: 'run', skill: 'humanize' }));
   els.cancel.addEventListener('click', () => send({ type: 'cancel' }));
   els.account.addEventListener('click', () => send({ type: 'account' }));
-  document.querySelectorAll('[data-open]').forEach((b) => b.addEventListener('click', () => send({ type: 'open', url: b.dataset.open })));
+  // Links open in the browser, through the extension. The view never navigates itself, and VS Code's own link handling
+  // never sees the click, so a link opens once.
+  document.querySelectorAll('[data-open], a[href]').forEach((b) => b.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    send({ type: 'open', url: b.dataset.open ?? b.href });
+  }));
   window.addEventListener('message', (e) => { if (e.data?.type === 'state') draw(e.data.state); });
   send({ type: 'ready' });
 })();

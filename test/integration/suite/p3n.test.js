@@ -74,11 +74,33 @@ setup(async () => {
 suite('p3n', () => {
   test('commands, menus and the view are contributed', async () => {
     const all = await vscode.commands.getCommands(true);
-    for (const c of ['p3n.check', 'p3n.rewrite', 'p3n.setKey', 'p3n.removeKey']) assert.ok(all.includes(c), c);
+    for (const c of ['p3n.check', 'p3n.rewrite', 'p3n.setKey', 'p3n.removeKey', 'p3n.openSite']) assert.ok(all.includes(c), c);
     const { contributes } = vscode.extensions.getExtension(EXT_ID).packageJSON;
-    assert.deepEqual(contributes.commands.map((c) => c.title), ['p3n: Check for AI', 'p3n: Rewrite', 'p3n: Set API key', 'p3n: Remove API key']);
+    assert.deepEqual(contributes.commands.map((c) => c.title), ['p3n: Check for AI', 'p3n: Rewrite', 'p3n: Set API key', 'p3n: Remove API key', 'p3n: Open p3n.si']);
     assert.deepEqual(contributes.menus['editor/context'].map((m) => [m.command, m.when]), [['p3n.check', 'editorHasSelection'], ['p3n.rewrite', 'editorHasSelection']]);
     assert.equal(contributes.views.p3n[0].type, 'webview');
+  });
+
+  test('p3n: Open p3n.si and the link under the quota line open https://p3n.si/ in the browser', async () => {
+    const { html } = p3n.view.webviewView.webview;
+    assert.match(html, /<footer>\s*<span id="quota" class="small muted"><\/span>\s*<a id="site" class="link small" href="https:\/\/p3n\.si\/" title="Open p3n\.si in your browser">p3n\.si <span aria-hidden="true">↗<\/span><\/a>\s*<\/footer>/);
+    // Drawing the quota line keeps the link after it.
+    p3n.lastRendered = null;
+    p3n.post();
+    await shows(/Free without a key: 10 calls an hour, up to 5,000 characters each\.\s+p3n\.si ↗\s*$/);
+    // A stand-in for the browser: nothing opens. VS Code leaves vscode.env writable while tests run.
+    const opened = [];
+    const { openExternal } = vscode.env;
+    vscode.env.openExternal = async (uri) => { opened.push(uri.toString()); return true; };
+    assert.notEqual(vscode.env.openExternal, openExternal, 'the stand-in is in place');
+    try {
+      await vscode.commands.executeCommand('p3n.openSite');
+      // What a click on the link posts.
+      await p3n.onMessage({ type: 'open', url: 'https://p3n.si/' });
+    } finally {
+      vscode.env.openExternal = openExternal;
+    }
+    assert.deepEqual(opened, ['https://p3n.si/', 'https://p3n.si/']);
   });
 
   test('Check for AI: score, reason, sentences in the view; text and client header sent', async () => {
@@ -307,7 +329,7 @@ suite('p3n', () => {
     await waitFor(() => p3n.key === 'p3n_good', 'the key to load from SecretStorage');
     p3n.lastRendered = null;
     p3n.post();
-    await shows(/Balance \$4\.50 · key laptop/);
+    await shows(/Balance \$4\.50 · key laptop\s+p3n\.si ↗/);
     assert.match(p3n.lastRendered.text, /API key/);
 
     mock.reset();

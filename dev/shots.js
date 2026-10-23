@@ -257,7 +257,8 @@ async function setTheme(settingsFile, theme) {
     await until(async () => (await editorText()).includes('Team update'), 'essay.md in the editor', 60_000);
     await sleep(2500);
 
-    // SMOKE=1: the installed package loads, with both items in the right-click menu and the view drawn. No calls.
+    // SMOKE=1: the installed package loads, with both items in the right-click menu and the view drawn, p3n.si link
+    // included. No calls.
     if (process.env.SMOKE && !MOCK) {
       await selectLine(3);
       await press('Shift+F10');
@@ -269,6 +270,7 @@ async function setTheme(settingsFile, theme) {
       await click(icon.x, icon.y);
       const text = await until(async () => /Free without a key/.test((await viewText()) ?? '') && viewText(), 'the p3n view', 20_000);
       log('view:', text.split(/\n/).filter(Boolean).join(' | '));
+      if (!/Free without a key.*\s+p3n\.si ↗\s*$/.test(text)) throw new Error('No p3n.si link under the quota line.');
       await shot('smoke');
       return;
     }

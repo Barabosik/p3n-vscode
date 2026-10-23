@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.4
+
+- A **p3n.si ↗** link at the bottom of the p3n view, under the free calls or your balance, opens p3n.si in your browser. It's there with or without an API key.
+- **p3n: Open p3n.si** in the command palette does the same.
+
 ## 0.1.3
 
 - **Show changes**, under a rewrite, opens your selection and the rewrite side by side in VS Code's diff editor, so you can read what changed before you replace anything. Nothing in your file changes until you click **Replace selection**.

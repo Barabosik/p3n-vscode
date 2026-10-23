@@ -45,6 +45,7 @@
 | p3n: Rewrite | `p3n.rewrite` | Right-click a selection, the command palette, the p3n view |
 | p3n: Set API key | `p3n.setKey` | The command palette, or **Add API key** at the top of the p3n view |
 | p3n: Remove API key | `p3n.removeKey` | The command palette once a key is set, or **API key** at the top of the p3n view |
+| p3n: Open p3n.si | `p3n.openSite` | The command palette, or **p3n.si ↗** at the bottom of the p3n view |
 
 p3n sets no keyboard shortcuts, so it never takes keys you already use. To add your own, open **Keyboard Shortcuts** (Ctrl+K Ctrl+S, or Cmd+K Cmd+S on a Mac), search for **p3n**, double-click a command and press the keys. VS Code shows if they're already in use. Or add them to `keybindings.json`:
 

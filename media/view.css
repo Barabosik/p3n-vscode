@@ -149,5 +149,6 @@ body.vscode-high-contrast .note, body.vscode-high-contrast-light .note,
 body.vscode-high-contrast .quotes li, body.vscode-high-contrast-light .quotes li,
 body.vscode-high-contrast .rewrite, body.vscode-high-contrast-light .rewrite { border: 1px solid var(--vscode-contrastBorder); }
 
-footer#quota { padding: 8px 14px 12px; }
-footer#quota:empty { display: none; }
+/* The quota line, then the p3n.si link, with or without a key. */
+footer { padding: 8px 14px 12px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+#quota:empty { display: none; }
