@@ -82,12 +82,15 @@ suite('p3n', () => {
   });
 
   test('p3n: Open p3n.si and the link under the quota line open https://p3n.si/ in the browser', async () => {
-    const { html } = p3n.view.webviewView.webview;
-    assert.match(html, /<footer>\s*<span id="quota" class="small muted"><\/span>\s*<a id="site" class="link small" href="https:\/\/p3n\.si\/" title="Open p3n\.si in your browser">p3n\.si <span aria-hidden="true">↗<\/span><\/a>\s*<\/footer>/);
+    const link = p3n.view.webviewView.webview.html.match(/<footer>\s*<span id="quota" class="small muted"><\/span>\s*<a id="site" class="link small" href="https:\/\/p3n\.si\/" title="Open p3n\.si in your browser">(.*?)<\/a>\s*<\/footer>/);
+    assert.ok(link, 'the link follows the quota line in the footer');
+    // Screen readers hear "p3n.si", with no trailing space; the arrow is only seen.
+    assert.equal(link[1].replace(/<span aria-hidden="true">.*?<\/span>/g, ''), 'p3n.si');
+    assert.equal(link[1].replace(/<[^>]+>/g, ''), 'p3n.si ↗');
     // Drawing the quota line keeps the link after it.
     p3n.lastRendered = null;
     p3n.post();
-    await shows(/Free without a key: 10 calls an hour, up to 5,000 characters each\.\s+p3n\.si ↗\s*$/);
+    await shows(/Free without a key: 10 calls an hour, up to 5,000 characters each\.\np3n\.si ↗$/);
     // A stand-in for the browser: nothing opens. VS Code leaves vscode.env writable while tests run.
     const opened = [];
     const { openExternal } = vscode.env;

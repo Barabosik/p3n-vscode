@@ -78,7 +78,7 @@ class View {
   </main>
   <footer>
     <span id="quota" class="small muted"></span>
-    <a id="site" class="link small" href="https://p3n.si/" title="Open p3n.si in your browser">p3n.si <span aria-hidden="true">↗</span></a>
+    <a id="site" class="link small" href="https://p3n.si/" title="Open p3n.si in your browser">p3n.si<span aria-hidden="true"> ↗</span></a>
   </footer>
   <script nonce="${nonce}" src="${src('view.js')}"></script>
 </body>
